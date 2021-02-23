@@ -1,4 +1,4 @@
-
+import Usefulfunctions.*
 
 clear all
 clc
@@ -19,6 +19,5 @@ for n=bw:1:length(bw)
     s(n)=Gain*s(n);
 end
 
-
+s2=delay(s,1);
 plot(t,10*log10(abs(s)))
-
