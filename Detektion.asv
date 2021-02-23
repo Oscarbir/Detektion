@@ -20,5 +20,4 @@ for n=bw:1:length(bw)
 end
 
 
-plot(t,10*log10(abs(s)))
-
+plot(t,s)
