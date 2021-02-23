@@ -1,6 +1,6 @@
 clc, clear all
 
-%%Tänker att vi skapar en signal först 
+%%Tï¿½nker att vi skapar en signal fï¿½rst 
 X=load('x.mat');
 x=X.x;
 r1=xcorr(x(:,1),x(:,2),3000)/length(x(:,1));
