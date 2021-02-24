@@ -1,27 +1,38 @@
-import Usefulfunctions.*
+clc, clear all
 
-clear all
-clc
+%%T�nker att vi skapar en signal f�rst 
+X=load('x.mat');
+x=X.x;
 
-Fs=100; % sample frekv
-N=8192; % samples
-Ts=1/100; %samle intervall
-Tmax=(N-1)*Ts; 
-t=0:Ts:Tmax; % tidsintervall
+r1=xcorr(x(:,1),x(:,2),3000)/length(x(:,1));
+r2=xcorr(x(:,1),x(:,3),3000)/length(x(:,1));
+r3=xcorr(x(:,1),x(:,4),3000)/length(x(:,1));
+r4=xcorr(x(:,1),x(:,5),3000)/length(x(:,1));
+ subplot(1,4,1)
+plot(abs(r1))
+ subplot(1,4,2)
+ plot(abs(r2))
+subplot(1,4,3)
+plot(abs(r3))
+subplot(1,4,4)
+plot(abs(r4))
 
-s=randn(N,1)+1i*rand(N,1);
+figure(2)
 
-bw=linspace(4000,1,6000)
+pspectrum(x(:,1))
 
-Gain=30;
-for n=bw:1:length(bw)
-    %s=(randn(N,1)+1i*rand(N,1));
-    s(n)=Gain*s(n);
-end
+%% genSignal
+close,clear all,clc
 
-s2=delay(s,1);
+sParam=struct;
+sParam.centerFq=0;
+sParam.bw=3e6;
+sParam.gain=30;
+sParam.fs=10e6;
 
-corr=xcorr(s,s2);
 
-%plot(t,10*log10(abs(s)))
-plot(corr);
+signalGen=c_SignalGen(sParam);
+[fAxis,s]=signalGen.generateSignal;
+
+y=10
+plot(fAxis,abs(s))

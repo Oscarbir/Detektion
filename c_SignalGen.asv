@@ -2,20 +2,36 @@ classdef c_SignalGen
     
     
     properties
-        Property1
+        centerFq;
+        bw;
+        gain;
+        fs;
+        N;
+        
     end
     
     methods
-        function obj = c_SignalGen(inputArg1,inputArg2)
-            %C_SIGNALGEN Construct an instance of this class
-            %   Detailed explanation goes here
-            obj.Property1 = inputArg1 + inputArg2;
+        function obj = c_SignalGen(centerFq,bw,gain,fs)
+            obj.centerFq=centerFq;
+            obj.bw=bw;
+            obj.gain=gain;
+            obj.fs=fs;
+            obj.N=obj.fs;
         end
         
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+        function out = generateSignal(obj)
+            
+            df=obj.N/obj.fs;
+            k=obj.bw/df;
+            
+            noiseFloor=randn(N,1)+1i*rand(N,1);
+            noiseSignal=randn(k,1)+ 1i*randn(k,1);
+            
+            zPaddedNoiseSignal=[zeros(obj.N/2-k/2,1);noiseSignal+obj.gain;zeros(obj.N/2-k/2,1,1)];
+            
+            out=zPaddedNoiseSignal+noiseFloor;
+            
+            
         end
     end
 end
