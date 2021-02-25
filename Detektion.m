@@ -39,18 +39,37 @@ signalGen=c_SignalGen(sParam);
 pspectrum(out,sParam.fs)
 %% genSignal and RFpropogate
 clc, close, clear all
+%init signal
 sParam=struct;
-sParam.centerFq=0;
+sParam.centerFq=650e6;
 sParam.bw=2e6;
 sParam.power=100; %power in watt
 sParam.fs=10e6; %samplefq
 sParam.N=10e3;  %nr samples
 sParam.noise=0.1;
 
-
+%inspect signal..
 signalGen=c_SignalGen(sParam);
 [fAxis,out]=signalGen.generateSignal;
+watt_signal=bandpower(out,sParam.fs,[-1e6 1e6])
+figure(1)
+pspectrum(out,sParam.fs)
+hold on
+% todo plotta amgfunc
 
-watt_signal=rms(out)^2
+%init enviroment
+envParam=struct;
+envParam.signal.cFq=sParam.centerFq;
+envParam.signal.fs=sParam.fs;
+envParam.rx.coord=[0,0];
+envParam.tx.coord=[5e3,0];
+envParam.target.coord=[(2.5e3),(2.5e3)];
+envParam.target.cs=40;
+
+env=c_Enviroment(envParam);
+
+out=env.propagate(out,5e3);
 
 pspectrum(out,sParam.fs)
+
+
