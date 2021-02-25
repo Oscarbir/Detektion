@@ -46,7 +46,7 @@ sParam.bw=2e6;
 sParam.power=100; %power in watt
 sParam.fs=10e6; %samplefq
 sParam.N=10e3;  %nr samples
-sParam.noise=0.1;
+sParam.noise=0; %noise 
 
 %inspect signal..
 signalGen=c_SignalGen(sParam);
@@ -61,6 +61,8 @@ hold on
 envParam=struct;
 envParam.signal.cFq=sParam.centerFq;
 envParam.signal.fs=sParam.fs;
+envParam.signal.pwr=sParam.power;
+envParam.signal.effBw=sParam.fs;
 envParam.rx.coord=[0,0];
 envParam.tx.coord=[5e3,0];
 envParam.target.coord=[(2.5e3),(2.5e3)];
@@ -69,7 +71,14 @@ envParam.target.cs=40;
 env=c_Enviroment(envParam);
 
 out=env.propagate(out,5e3);
+%env.propogateEcho(out,7070);
+
+dPwr=env.powerDensityAtDist(sParam.power,5e3)
+rPwr=env.powerDensityEcho(sParam.power,7070)
+
+att=10*log10(rPwr/dPwr)
+
 
 pspectrum(out,sParam.fs)
-
+pspectrum(out*(db2mag(att)),sParam.fs)
 
