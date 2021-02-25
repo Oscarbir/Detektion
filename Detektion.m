@@ -22,17 +22,21 @@ figure(2)
 pspectrum(x(:,1))
 
 %% genSignal
+import Usefullfunctions.*
 close,clear all,clc
 
 sParam=struct;
 sParam.centerFq=0;
-sParam.bw=3e6;
-sParam.gain=30;
+sParam.bw=2e6;
+sParam.gain=50;
 sParam.fs=10e6;
-
+sParam.N=10e3;
+sParam.noiseFloor=0;
 
 signalGen=c_SignalGen(sParam);
-[fAxis,s]=signalGen.generateSignal;
+[fAxis,out]=signalGen.generateSignal;
 
-y=10
-plot(fAxis,abs(s))
+pspectrum(out,sParam.fs)
+
+%y=10*log(abs(s)/0.001);asdasdasd
+%plot(fAxis,y)

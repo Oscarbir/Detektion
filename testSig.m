@@ -80,39 +80,45 @@ clc
 import Usefulfunctions.*
 clf
 
-N=10e6;
+N=10e3;
 fs=10e6;
 bw=2e6;
 
-df=N/fs
+df=fs/N
 
 Nbw=bw/df
 
 
-gain=30;
+gain=15;
 
-dt=1/fs;
 
 s1=randn(N,1)+ 1i*randn(N,1);
 s2=randn(Nbw,1)+ 1i*randn(Nbw,1);
 
-vec= [1 ;2 ;3 ;4]
 
-z=[zeros(N/2-Nbw/2,1); s2+gain ; zeros(N/2-Nbw/2,1,1)];
+
+z=[zeros(N/2-Nbw/2,1); normalize(10*log10(s2))+gain ; zeros(N/2-Nbw/2,1,1)];
 
 f = (-N/2:N/2-1)*(fs/N);
 
-s3=z+s1;
+s1Norm=normalize(10*log10(s1))+100;
+zNorm=(abs(z))+s1Norm;
 
 df=fs/N
 figure(1)
 
+
+
+plot(f,abs(s1Norm))
 figure(2)
-plot(f,abs(s3))
-hold on
-%plot(f,abs(z))
-% 
-% 
+plot(f,zNorm)
+figure(3)
+iz=ifft(fftshift(z));
+pspectrum(iz,fs)
+%pspectrum(s2)
+
+
+
 
 
 %% ss

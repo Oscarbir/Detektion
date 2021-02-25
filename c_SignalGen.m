@@ -7,6 +7,7 @@ classdef c_SignalGen
         gain;
         fs;
         N;
+        noiseFloor;
         
     end
     
@@ -16,21 +17,27 @@ classdef c_SignalGen
             obj.bw=sParam.bw;
             obj.gain=sParam.gain;
             obj.fs=sParam.fs;
-            obj.N=obj.fs;
+            obj.N=sParam.N;
+            obj.noiseFloor=sParam.noiseFloor;
         end
         
         function [fAxis,out] = generateSignal(obj)
             
-            df=obj.N/obj.fs; % delta f of sample
+            df=obj.fs/obj.N; % delta f of sample
             k=obj.bw/df; % number of smaples for bw
             
-            noiseFloor=randn(obj.N,1)+1i*rand(obj.N,1); %noisefloor
-            noiseSignal=randn(k,1)+ 1i*randn(k,1);
+            noise=randn(obj.N,1)+1i*rand(obj.N,1); %noisefloor
+            randSignal=randn(k,1)+ 1i*randn(k,1); % random signal with bw, in fqdomain
             
-            %zeropad to match length of noisefloor, gain added to signal
-            zPaddedNoiseSignal=[zeros(obj.N/2-k/2,1);noiseSignal+obj.gain;zeros(obj.N/2-k/2,1,1)];
+            %padd signal and noise with zeros
+            randSignalZP=[zeros(obj.N/2-k/2,1); randSignal ; zeros(obj.N/2-k/2,1,1)];
+            noiseZP=[noise(1:obj.N/2-k/2);zeros(k,1);noise(obj.N/2+k/2:obj.N-1)];
             
-            out=zPaddedNoiseSignal+noiseFloor;
+            %convert signals to timeDomain
+            outSignal=obj.gain*(ifft(fftshift(randSignalZP)));
+            outNoise=obj.noiseFloor*(ifft(fftshift(noiseZP)));
+            
+            out=outSignal+outNoise;
             
             fAxis = (-obj.N/2:obj.N/2-1)*(obj.fs/obj.N);
         end

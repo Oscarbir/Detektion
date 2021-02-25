@@ -11,27 +11,40 @@ classdef c_SignalGen
     end
     
     methods
-        function obj = c_SignalGen(centerFq,bw,gain,fs)
-            obj.centerFq=centerFq;
-            obj.bw=bw;
-            obj.gain=gain;
-            obj.fs=fs;
-            obj.N=obj.fs;
+        function obj = c_SignalGen(sParam)
+            obj.centerFq=sParam.centerFq;
+            obj.bw=sParam.bw;
+            obj.gain=sParam.gain;
+            obj.fs=sParam.fs;
+            obj.N=sParam.N;
+            obj.noiseFloor=sParam.noiseFloor;
         end
         
-        function out = generateSignal(obj)
+        function [fAxis] = generateSignal(obj)
             
-            df=obj.N/obj.fs;
-            k=obj.bw/df;
+            df=obj.fs/obj.N; % delta f of sample
+            k=obj.bw/df; % number of smaples for bw
             
-            noiseFloor=randn(N,1)+1i*rand(N,1);
-            noiseSignal=randn(k,1)+ 1i*randn(k,1);
+            noise=randn(obj.N,1)+1i*rand(obj.N,1); %noisefloor
+            randSignal=randn(k,1)+ 1i*randn(k,1); % random signal with bw in fqdomain
+                  
+            randSignalZP=[zeros(obj.N/2-k/2,1); randSignal ; zeros(obj.N/2-k/2,1,1)];
+            noiseZP=[noise(1:obj.N/2-k);zeros(k,1);noise(obj.N/2+k/2:N)];
             
-            zPaddedNoiseSignal=[zeros(obj.N/2-k/2,1);noiseSignal+obj.gain;zeros(obj.N/2-k/2,1,1)];
+            outSignal=obj.gain*(ifft(fftshift(randSignalZP)));
             
-            out=zPaddedNoiseSignal+noiseFloor;
+            pspectrum(outSignal,obj.fs)
             
+            %zeropad to match length of noisefloor, gain added to signal
+            %zPaddedNoiseSignal=[zeros(obj.N/2-k/2,1);noiseSignal;zeros(obj.N/2-k/2,1,1)];
             
+            %plot(zPaddedNoiseSignal)
+            
+            %length(zPaddedNoiseSignal)
+            %length(noiseFloor)
+            %out=zPaddedNoiseSignal+noiseFloor;
+            
+            fAxis = (-obj.N/2:obj.N/2-1)*(obj.fs/obj.N);
         end
     end
 end
