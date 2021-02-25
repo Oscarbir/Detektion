@@ -4,9 +4,10 @@ classdef c_SignalGen
     properties
         centerFq;
         bw;
-        gain;
+        power;
         fs;
         N;
+        noise;
         
     end
     
@@ -14,35 +15,40 @@ classdef c_SignalGen
         function obj = c_SignalGen(sParam)
             obj.centerFq=sParam.centerFq;
             obj.bw=sParam.bw;
-            obj.gain=sParam.gain;
+            obj.power=sParam.power;
             obj.fs=sParam.fs;
             obj.N=sParam.N;
-            obj.noiseFloor=sParam.noiseFloor;
+            obj.noise=sParam.noise;
         end
         
-        function [fAxis] = generateSignal(obj)
+        function [fAxis,out] = generateSignal(obj)
+            
             
             df=obj.fs/obj.N; % delta f of sample
             k=obj.bw/df; % number of smaples for bw
             
             noise=randn(obj.N,1)+1i*rand(obj.N,1); %noisefloor
-            randSignal=randn(k,1)+ 1i*randn(k,1); % random signal with bw in fqdomain
-                  
-            randSignalZP=[zeros(obj.N/2-k/2,1); randSignal ; zeros(obj.N/2-k/2,1,1)];
-            noiseZP=[noise(1:obj.N/2-k);zeros(k,1);noise(obj.N/2+k/2:N)];
+            randSignal=(randn(k,1)+ 1i*randn(k,1)); % random signal with bw, in fqdomain
             
-            outSignal=obj.gain*(ifft(fftshift(randSignalZP)));
+            %padd signal and noise with zeros
+            randSignalZP=[zeros(obj.N/2-k/2,1); randSignal  ; zeros(obj.N/2-k/2,1,1)];
+            noiseZP=[noise(1:obj.N/2-k/2);zeros(k,1);noise(obj.N/2+k/2:obj.N-1)];
             
-            pspectrum(outSignal,obj.fs)
+            %convert signals to timeDomain
+            outSignal=(ifft(fftshift(randSignalZP)));
+            outNoise=obj.noise*(ifft(fftshift(noiseZP)));
             
-            %zeropad to match length of noisefloor, gain added to signal
-            %zPaddedNoiseSignal=[zeros(obj.N/2-k/2,1);noiseSignal;zeros(obj.N/2-k/2,1,1)];
+            dt=1/obj.fs;
             
-            %plot(zPaddedNoiseSignal)
+            %Calc the en
+            signalEnergy=sum((abs(outSignal).^2.*dt));
             
-            %length(zPaddedNoiseSignal)
-            %length(noiseFloor)
-            %out=zPaddedNoiseSignal+noiseFloor;
+            outSignal_normTo1=outSignal./sqrt(E);
+            
+            E=sum((abs(outSignal).^2.*dt))
+            E=obj.power*length(outSignal)*dt;
+            outSignal=outSignal.*sqrt(E)
+            out=outSignal;%+outNoise;
             
             fAxis = (-obj.N/2:obj.N/2-1)*(obj.fs/obj.N);
         end

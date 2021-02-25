@@ -4,10 +4,10 @@ classdef c_SignalGen
     properties
         centerFq;
         bw;
-        gain;
+        power;
         fs;
         N;
-        noiseFloor;
+        noise;
         
     end
     
@@ -15,29 +15,40 @@ classdef c_SignalGen
         function obj = c_SignalGen(sParam)
             obj.centerFq=sParam.centerFq;
             obj.bw=sParam.bw;
-            obj.gain=sParam.gain;
+            obj.power=sParam.power;
             obj.fs=sParam.fs;
             obj.N=sParam.N;
-            obj.noiseFloor=sParam.noiseFloor;
+            obj.noise=sParam.noise;
         end
         
         function [fAxis,out] = generateSignal(obj)
+            
             
             df=obj.fs/obj.N; % delta f of sample
             k=obj.bw/df; % number of smaples for bw
             
             noise=randn(obj.N,1)+1i*rand(obj.N,1); %noisefloor
-            randSignal=randn(k,1)+ 1i*randn(k,1); % random signal with bw, in fqdomain
+            randSignal=(randn(k,1)+ 1i*randn(k,1)); % random signal with bw, in fqdomain
             
             %padd signal and noise with zeros
-            randSignalZP=[zeros(obj.N/2-k/2,1); randSignal ; zeros(obj.N/2-k/2,1,1)];
+            randSignalZP=[zeros(obj.N/2-k/2,1); randSignal  ; zeros(obj.N/2-k/2,1,1)];
             noiseZP=[noise(1:obj.N/2-k/2);zeros(k,1);noise(obj.N/2+k/2:obj.N-1)];
             
             %convert signals to timeDomain
-            outSignal=obj.gain*(ifft(fftshift(randSignalZP)));
-            outNoise=obj.noiseFloor*(ifft(fftshift(noiseZP)));
+            outSignal=(ifft(fftshift(randSignalZP)));
+            outNoise=obj.noise*(ifft(fftshift(noiseZP)));
             
-            out=outSignal+outNoise;
+            % gain calc for power specified
+            dt=1/obj.fs;
+            
+            %calc and normalize energy in signal to 1 w, for easy scaling
+            E=sum((abs(outSignal).^2.*dt));
+            outSignal_scaled=outSignal./sqrt(E);
+            
+            %scale signal for target power
+            E=obj.power*length(outSignal_scaled)*dt;
+            outSignal_scaled=outSignal_scaled.*sqrt(E);
+            out=outSignal_scaled+outNoise;
             
             fAxis = (-obj.N/2:obj.N/2-1)*(obj.fs/obj.N);
         end

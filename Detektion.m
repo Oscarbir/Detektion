@@ -22,7 +22,7 @@ figure(2)
 pspectrum(x(:,1))
 
 %% genSignal
-import Usefullfunctions.*
+import Usefulfunctions.*
 close,clear all,clc
 
 sParam=struct;
@@ -31,12 +31,26 @@ sParam.bw=2e6;
 sParam.gain=50;
 sParam.fs=10e6;
 sParam.N=10e3;
-sParam.noiseFloor=0;
+sParam.noise=0.1;
 
 signalGen=c_SignalGen(sParam);
 [fAxis,out]=signalGen.generateSignal;
 
 pspectrum(out,sParam.fs)
+%% genSignal and RFpropogate
+clc, close, clear all
+sParam=struct;
+sParam.centerFq=0;
+sParam.bw=2e6;
+sParam.power=100; %power in watt
+sParam.fs=10e6; %samplefq
+sParam.N=10e3;  %nr samples
+sParam.noise=0.1;
 
-%y=10*log(abs(s)/0.001);asdasdasd
-%plot(fAxis,y)
+
+signalGen=c_SignalGen(sParam);
+[fAxis,out]=signalGen.generateSignal;
+
+watt_signal=rms(out)^2
+
+pspectrum(out,sParam.fs)
