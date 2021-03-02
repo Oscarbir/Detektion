@@ -16,6 +16,8 @@ phi = rad2deg(angle(r1(9033)))
 
 %  subplot(1,4,1)
 plot(abs(r1))
+hold on 
+plot(
 %  subplot(1,4,2)
 % plot([real(r2),imag(r2)])
 %  subplot(1,4,3)
